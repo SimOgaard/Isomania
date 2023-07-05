@@ -1,11 +1,18 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using static Render.Pipeline.CameraRenderer.CameraSettings;
 
 namespace Render.Pipeline.CameraRenderer
 {
     public abstract class CameraRenderer
     {
         protected static readonly ShaderTagId unlitShaderTagId = new("SRPDefaultUnlit");
+
+        protected static readonly int bufferSizeId = Shader.PropertyToID("_CameraBufferSize"),
+                                      colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment"),
+	  	                              depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment"),
+		                              colorTextureId = Shader.PropertyToID("_CameraColorTexture"),
+		                              depthTextureId = Shader.PropertyToID("_CameraDepthTexture");
 
         protected ScriptableRenderContext context;
         protected Camera camera;
@@ -52,6 +59,23 @@ namespace Render.Pipeline.CameraRenderer
         protected void Setup()
         {
             context.SetupCameraProperties(camera);
+
+
+
+            buffer.GetTemporaryRT(
+                colorTextureId, RenderResolution.x, RenderResolution.y,
+                0, FilterMode.Point, RenderTextureFormat.Default
+            );
+            buffer.CopyTexture(colorAttachmentId, colorTextureId);
+
+            buffer.GetTemporaryRT(
+                depthTextureId, RenderResolution.x, RenderResolution.y,
+                32, FilterMode.Point, RenderTextureFormat.Depth
+            );
+            buffer.CopyTexture(depthAttachmentId, depthTextureId);
+
+
+
             CameraClearFlags flags = camera.clearFlags;
             buffer.ClearRenderTarget(
                 flags <= CameraClearFlags.Depth,

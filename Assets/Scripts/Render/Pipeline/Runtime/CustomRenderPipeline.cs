@@ -1,37 +1,53 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
-using Render.Pipeline.CameraRenderer;
 
-namespace Render.Pipeline.Runtime
-{
-    public class CustomRenderPipeline : RenderPipeline
-    {
-#if UNITY_EDITOR
-        private readonly EditorCameraRenderer editorCameraRenderer = new();
-#endif
-        private bool useDynamicBatching, useGPUInstancing;
+public partial class CustomRenderPipeline : RenderPipeline {
 
-        public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher)
-        {
-            this.useDynamicBatching = useDynamicBatching;
-            this.useGPUInstancing = useGPUInstancing;
-            GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
-        }
+	CameraRenderer renderer;
 
-        private readonly PixelPerfectCameraRenderer pixelPerfectCameraRenderer = new();
-        protected override void Render(ScriptableRenderContext context, Camera[] cameras)
-        {
-            foreach (Camera camera in cameras)
-            {
-#if UNITY_EDITOR
-                if (camera.cameraType == CameraType.SceneView)
-                {
-                    editorCameraRenderer.Render(context, camera, useDynamicBatching, useGPUInstancing);
-                    continue;
-                }
-#endif
-                pixelPerfectCameraRenderer.Render(context, camera, useDynamicBatching, useGPUInstancing);
-            }
-        }
-    }
+	CameraBufferSettings cameraBufferSettings;
+
+	bool useDynamicBatching, useGPUInstancing, useLightsPerObject;
+
+	ShadowSettings shadowSettings;
+
+	PostFXSettings postFXSettings;
+
+	int colorLUTResolution;
+
+	public CustomRenderPipeline (
+		CameraBufferSettings cameraBufferSettings,
+		bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher,
+		bool useLightsPerObject, ShadowSettings shadowSettings,
+		PostFXSettings postFXSettings, int colorLUTResolution, Shader cameraRendererShader
+	) {
+		this.colorLUTResolution = colorLUTResolution;
+		//this.allowHDR = allowHDR;
+		this.cameraBufferSettings = cameraBufferSettings;
+		this.postFXSettings = postFXSettings;
+		this.shadowSettings = shadowSettings;
+		this.useDynamicBatching = useDynamicBatching;
+		this.useGPUInstancing = useGPUInstancing;
+		this.useLightsPerObject = useLightsPerObject;
+		GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+		GraphicsSettings.lightsUseLinearIntensity = true;
+		InitializeForEditor();
+		renderer = new CameraRenderer(cameraRendererShader);
+	}
+
+	protected override void Render (ScriptableRenderContext context, Camera[] cameras) {
+		foreach (Camera camera in cameras) {
+			renderer.Render(
+				context, camera, cameraBufferSettings,
+				useDynamicBatching, useGPUInstancing, useLightsPerObject,
+				shadowSettings, postFXSettings, colorLUTResolution
+			);
+		}
+	}
+
+	protected override void Dispose (bool disposing) {
+		base.Dispose(disposing);
+		DisposeForEditor();
+		renderer.Dispose();
+	}
 }
