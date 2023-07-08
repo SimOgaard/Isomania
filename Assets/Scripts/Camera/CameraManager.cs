@@ -91,7 +91,7 @@ public class CameraManager : MonoBehaviour
         camera.orthographic = true;
         camera.orthographicSize = OrthographicSize;
         camera.clearFlags = CameraClearFlags.Color;
-        camera.backgroundColor = Color.clear;
+        camera.backgroundColor = Color.red;
     }
 
     private void LateUpdate()

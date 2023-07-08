@@ -4,7 +4,7 @@
 public class CustomRenderPipelineCamera : MonoBehaviour {
 
 	[SerializeField]
-	CameraSettings settings = default;
+	private CameraSettings settings = default;
 
-	public CameraSettings Settings => settings ?? (settings = new CameraSettings());
+	public CameraSettings Settings => settings ??= new();
 }
