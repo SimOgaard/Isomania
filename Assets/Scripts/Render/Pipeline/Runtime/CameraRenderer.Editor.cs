@@ -65,11 +65,10 @@ partial class CameraRenderer {
 		);
 	}
 
-	partial void PrepareForSceneWindow()
-	{
+	partial void PrepareForSceneWindow () {
 		if (camera.cameraType == CameraType.SceneView) {
 			ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
-			bufferSize = new Vector2Int(camera.pixelWidth, camera.pixelHeight);
+			useScaledRendering = false;
 		}
 	}
 

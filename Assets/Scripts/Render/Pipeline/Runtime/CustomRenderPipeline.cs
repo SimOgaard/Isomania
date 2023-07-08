@@ -22,6 +22,7 @@ public partial class CustomRenderPipeline : RenderPipeline {
 		PostFXSettings postFXSettings, int colorLUTResolution, Shader cameraRendererShader
 	) {
 		this.colorLUTResolution = colorLUTResolution;
+		//this.allowHDR = allowHDR;
 		this.cameraBufferSettings = cameraBufferSettings;
 		this.postFXSettings = postFXSettings;
 		this.shadowSettings = shadowSettings;

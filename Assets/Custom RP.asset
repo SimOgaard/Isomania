@@ -13,12 +13,14 @@ MonoBehaviour:
   m_Name: Custom RP
   m_EditorClassIdentifier: 
   cameraBuffer:
-    CopyColor: 1
-    CopyColorReflection: 1
-    CopyDepth: 1
-    CopyDepthReflection: 1
-    BufferSize: {x: 512, y: 288}
-  useDynamicBatching: 1
+    allowHDR: 1
+    copyColor: 1
+    copyColorReflection: 0
+    copyDepth: 1
+    copyDepthReflection: 0
+    renderScale: 1
+    bicubicRescaling: 0
+  useDynamicBatching: 0
   useGPUInstancing: 1
   useSRPBatcher: 1
   useLightsPerObject: 1
@@ -37,6 +39,6 @@ MonoBehaviour:
     other:
       atlasSize: 1024
       filter: 2
-  postFXSettings: {fileID: 0}
-  colorLUTResolution: 16
+  postFXSettings: {fileID: 11400000, guid: 2e703c10311224205856a15ca4e1b1c0, type: 2}
+  colorLUTResolution: 32
   cameraRendererShader: {fileID: 4800000, guid: 8ddf7a135e9224bf68caaacdb35c85f0, type: 3}

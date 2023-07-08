@@ -5,7 +5,10 @@ using UnityEngine.Rendering;
 public partial class CustomRenderPipelineAsset : RenderPipelineAsset {
 
 	[SerializeField]
-	CameraBufferSettings cameraBuffer = new CameraBufferSettings { BufferSize = new Vector2Int(512, 288) };
+	CameraBufferSettings cameraBuffer = new CameraBufferSettings {
+		allowHDR = true,
+		renderScale = 1f
+	};
 
 	[SerializeField]
 	bool

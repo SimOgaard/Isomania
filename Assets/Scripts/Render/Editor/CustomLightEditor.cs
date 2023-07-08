@@ -3,24 +3,29 @@ using UnityEditor;
 
 [CanEditMultipleObjects]
 [CustomEditorForRenderPipeline(typeof(Light), typeof(CustomRenderPipelineAsset))]
-public class CustomLightEditor : LightEditor
-{
-	private static readonly GUIContent renderingLayerMaskLabel = new GUIContent("Rendering Layer Mask", "Functional version of above property.");
+public class CustomLightEditor : LightEditor {
 
-	public override void OnInspectorGUI()
-	{
+	static GUIContent renderingLayerMaskLabel =
+		new GUIContent("Rendering Layer Mask", "Functional version of above property.");
+
+	public override void OnInspectorGUI() {
 		base.OnInspectorGUI();
-		RenderingLayerMaskDrawer.Draw(settings.renderingLayerMask, renderingLayerMaskLabel);
+		RenderingLayerMaskDrawer.Draw(
+			settings.renderingLayerMask, renderingLayerMaskLabel
+		);
 		
-		if (!settings.lightType.hasMultipleDifferentValues &&
-			(LightType)settings.lightType.enumValueIndex == LightType.Spot)
+		if (
+			!settings.lightType.hasMultipleDifferentValues &&
+			(LightType)settings.lightType.enumValueIndex == LightType.Spot
+		)
+		{
 			settings.DrawInnerAndOuterSpotAngle();
+		}
 
 		settings.ApplyModifiedProperties();
 
-        Light light = target as Light;
-		if (light.cullingMask != -1)
-		{
+		var light = target as Light;
+		if (light.cullingMask != -1) {
 			EditorGUILayout.HelpBox(
 				light.type == LightType.Directional ?
 					"Culling Mask only affects shadows." :
