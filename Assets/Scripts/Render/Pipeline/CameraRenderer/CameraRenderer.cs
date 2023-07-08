@@ -6,10 +6,17 @@ namespace Render.Pipeline.CameraRenderer
     public abstract class CameraRenderer
     {
         protected static readonly ShaderTagId unlitShaderTagId = new("SRPDefaultUnlit");
+        protected static readonly int bufferSizeId = Shader.PropertyToID("_CameraBufferSize"),
+                                      colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment"),
+ 							          depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment"),
+							          colorTextureId = Shader.PropertyToID("_CameraColorTexture"),
+							          depthTextureId = Shader.PropertyToID("_CameraDepthTexture"),
+							          sourceTextureId = Shader.PropertyToID("_SourceTexture");
 
         protected ScriptableRenderContext context;
         protected Camera camera;
 
+        protected Vector2Int bufferSize;
         protected const string bufferName = "Camera Renderer";
         protected readonly CommandBuffer buffer = new() { name = bufferName };
 #if UNITY_EDITOR
@@ -53,6 +60,24 @@ namespace Render.Pipeline.CameraRenderer
         {
             context.SetupCameraProperties(camera);
             CameraClearFlags flags = camera.clearFlags;
+
+
+            buffer.GetTemporaryRT(
+                colorAttachmentId, bufferSize.x, bufferSize.y,
+                0, FilterMode.Point, RenderTextureFormat.DefaultHDR
+            );
+            buffer.GetTemporaryRT(
+                depthAttachmentId, bufferSize.x, bufferSize.y,
+                32, FilterMode.Point, RenderTextureFormat.Depth
+            );
+            buffer.SetRenderTarget(
+                colorAttachmentId,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                depthAttachmentId,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
+            );
+
+
             buffer.ClearRenderTarget(
                 flags <= CameraClearFlags.Depth,
                 flags == CameraClearFlags.Color,
@@ -63,7 +88,22 @@ namespace Render.Pipeline.CameraRenderer
 #else
             buffer.BeginSample(bufferName); // wont gc
 #endif
+            buffer.SetGlobalVector(bufferSizeId, new Vector4(
+                1f / bufferSize.x, 1f / bufferSize.y,
+                bufferSize.x, bufferSize.y
+            ));
             ExecuteBuffer();
+        }
+
+        protected void Cleanup()
+        {
+            buffer.ReleaseTemporaryRT(colorAttachmentId);
+            buffer.ReleaseTemporaryRT(depthAttachmentId);
+        }
+
+        protected void Render()
+        {
+            buffer.Blit(colorAttachmentId, BuiltinRenderTextureType.CameraTarget);
         }
 
         protected void Submit()
@@ -73,6 +113,7 @@ namespace Render.Pipeline.CameraRenderer
 #else
             buffer.EndSample(bufferName); // wont gc
 #endif
+
             ExecuteBuffer();
             context.Submit();
         }

@@ -1,6 +1,7 @@
 using UnityEngine;
 
-public class MeshBall : MonoBehaviour
+[ExecuteAlways]
+public class ObjectSpawner : MonoBehaviour
 {
     private static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
 

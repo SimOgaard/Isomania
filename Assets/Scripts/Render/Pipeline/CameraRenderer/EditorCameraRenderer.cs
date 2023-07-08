@@ -21,6 +21,7 @@ namespace Render.Pipeline.CameraRenderer
             this.context = context;
             this.camera = camera;
 
+            bufferSize = new Vector2Int(camera.pixelWidth, camera.pixelHeight);
             PrepareBuffer();
             PrepareForSceneWindow();
             if (!Cull())
@@ -30,7 +31,9 @@ namespace Render.Pipeline.CameraRenderer
             DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
+            Render();
             Submit();
+            Cleanup();
         }
 
         private void DrawUnsupportedShaders()
