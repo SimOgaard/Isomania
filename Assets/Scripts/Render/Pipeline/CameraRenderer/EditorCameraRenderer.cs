@@ -36,6 +36,11 @@ namespace Render.Pipeline.CameraRenderer
             Cleanup();
         }
 
+        protected override void Render()
+        {
+            buffer.Blit(colorAttachmentId, BuiltinRenderTextureType.CameraTarget);
+        }
+
         private void DrawUnsupportedShaders()
         {
             DrawingSettings drawingSettings = new(legacyShaderTagIds[0], new SortingSettings(camera))

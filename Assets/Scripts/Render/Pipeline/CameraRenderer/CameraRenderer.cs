@@ -1,5 +1,7 @@
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.Rendering;
+using static Render.Pipeline.CameraRenderer.CameraSettings;
 
 namespace Render.Pipeline.CameraRenderer
 {
@@ -101,9 +103,9 @@ namespace Render.Pipeline.CameraRenderer
             buffer.ReleaseTemporaryRT(depthAttachmentId);
         }
 
-        protected void Render()
+        protected virtual void Render()
         {
-            buffer.Blit(colorAttachmentId, BuiltinRenderTextureType.CameraTarget);
+            buffer.Blit(colorAttachmentId, BuiltinRenderTextureType.CameraTarget, RenderScale, RenderOffset);
         }
 
         protected void Submit()

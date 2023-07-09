@@ -11,6 +11,10 @@ namespace Render.Pipeline.CameraRenderer
         private Camera mainCamera;
         [SerializeField]
         private Transform rotationAxisSnap;
+        [SerializeField]
+        private float rotationSpeed;
+
+        private const float snapIncrement = 360f / 8f;
 
         /// <summary>
         /// Rounds given Vector3 position to pixel grid
@@ -34,22 +38,25 @@ namespace Render.Pipeline.CameraRenderer
         private static Vector2 PixelSnap(Camera camera)
         {
             // we assume that camera.transform is done moving for this frame
-            // so now, right before rendering we want to snapp the camera to our global pixel grid
+            // so now, right before rendering we want to snapp the camera's pixels to our global pixel grid
+            // using bottom left pixel as reference
 
             // reseting local position:
             camera.transform.localPosition = new Vector3(0f, 0f, -CameraDistance);
 
-            // to snap to global pixel grid we have to first remove the rotation from our cameras world position
-            Vector3 unrotatedCameraPosition = Quaternion.Inverse(camera.transform.rotation) * camera.transform.position;
+            // get bottom left pixel position
+            Vector3 pixelPosition = camera.ScreenToWorldPoint(Vector3.zero);
+            // remove the rotation from our pixel position
+            Vector3 unrotatedPixelPosition = Quaternion.Inverse(camera.transform.rotation) * pixelPosition;
             // now we can snap it to the global pixel grid
-            Vector3 roundedUnrotatedCameraPosition = RoundToPixel(unrotatedCameraPosition);
+            Vector3 roundedUnrotatedPixelPosition = RoundToPixel(unrotatedPixelPosition);
             // rotate it back to its original state after the global pixel grid snap
-            Vector3 roundedCameraPosition = camera.transform.rotation * roundedUnrotatedCameraPosition;
-            // set camera position to snapped position
-            camera.transform.position = roundedCameraPosition;
+            Vector3 roundedCameraPosition = camera.transform.rotation * roundedUnrotatedPixelPosition;
+            // offset camera position with rounded and unrounded pixel position difference to snap it to our grid
+            camera.transform.position += roundedCameraPosition - pixelPosition;
 
             // get offset of rounded and actual camera position
-            Vector3 offset = roundedUnrotatedCameraPosition - unrotatedCameraPosition;
+            Vector3 offset = roundedUnrotatedPixelPosition - unrotatedPixelPosition;
             // transform offset world xy coordinates to pixel perfect coord using ppu
             Vector3 offsetPPU = offset * PixelsPerUnit;
             // transform from ppu to screen pixel offset
@@ -93,7 +100,31 @@ namespace Render.Pipeline.CameraRenderer
             camera.orthographic = true;
             camera.orthographicSize = OrthographicSize;
             camera.clearFlags = CameraClearFlags.Color;
-            camera.backgroundColor = Color.red;
+            camera.backgroundColor = Color.magenta;
+            camera.nearClipPlane = 0f;
+            camera.farClipPlane = 500f;
+
+            OnScreenResolutionPropertyChanged();
+        }
+
+        private int previousWidth, previousHeight;
+        private void OnScreenResolutionPropertyChanged()
+        {
+            previousWidth = Screen.width; previousHeight = Screen.height;
+            RecalculateCameraSettings(previousWidth, previousHeight);
+            mainCamera.orthographicSize = OrthographicSize;
+
+            float horizontal = RenderResolutionExtended.x / (PixelsPerUnit * 2f);
+            float vertical = RenderResolutionExtended.y / (PixelsPerUnit * 2f);
+            mainCamera.projectionMatrix = Matrix4x4.Ortho(-horizontal, horizontal, -vertical, vertical, mainCamera.nearClipPlane, mainCamera.farClipPlane);
+        }
+
+        private void Update()
+        {
+            if (Screen.width != previousWidth || Screen.height != previousHeight)
+                OnScreenResolutionPropertyChanged();
+
+            transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
         }
 
         private void LateUpdate()

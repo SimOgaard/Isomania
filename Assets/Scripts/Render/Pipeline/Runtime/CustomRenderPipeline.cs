@@ -24,7 +24,7 @@ namespace Render.Pipeline.Runtime
             foreach (Camera camera in cameras)
             {
 #if UNITY_EDITOR
-                if (camera.cameraType == CameraType.SceneView)
+                if (camera.cameraType is CameraType.SceneView or CameraType.Preview)
                 {
                     editorCameraRenderer.Render(context, camera, useDynamicBatching, useGPUInstancing);
                     continue;

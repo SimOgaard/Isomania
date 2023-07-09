@@ -11,6 +11,9 @@ public class ObjectSpawner : MonoBehaviour
     [SerializeField]
     private Material material = default;
 
+    [SerializeField]
+    private float radius = 10f;
+
     private readonly Matrix4x4[] matrices = new Matrix4x4[1023];
     private readonly Vector4[] baseColors = new Vector4[1023];
 
@@ -19,7 +22,7 @@ public class ObjectSpawner : MonoBehaviour
     {
         for (int i = 0; i < matrices.Length; i++)
         {
-            matrices[i] = Matrix4x4.TRS(Random.insideUnitSphere * 10f, Quaternion.identity, Vector3.one);
+            matrices[i] = Matrix4x4.TRS(Random.insideUnitSphere * radius, Quaternion.identity, Vector3.one);
             baseColors[i] = new Vector4(Random.value, Random.value, Random.value, 1f);
         }
 
