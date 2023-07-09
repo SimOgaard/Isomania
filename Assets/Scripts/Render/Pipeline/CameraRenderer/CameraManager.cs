@@ -44,8 +44,8 @@ namespace Render.Pipeline.CameraRenderer
             // reseting local position:
             camera.transform.localPosition = new Vector3(0f, 0f, -CameraDistance);
 
-            // get bottom left pixel position
-            Vector3 pixelPosition = camera.ScreenToWorldPoint(Vector3.zero);
+            // get center of bottom left pixel position because of floating point precision
+            Vector3 pixelPosition = camera.ScreenToWorldPoint(new Vector3(0.5f, 0.5f, 0f));
             // remove the rotation from our pixel position
             Vector3 unrotatedPixelPosition = Quaternion.Inverse(camera.transform.rotation) * pixelPosition;
             // now we can snap it to the global pixel grid
@@ -133,6 +133,8 @@ namespace Render.Pipeline.CameraRenderer
             RotationSnap();
             // and pixelsnap the main camera
             PixelSnap(mainCamera);
+
+            Debug.Log($"{mainCamera.transform.forward.x}, {mainCamera.transform.forward.y}, {mainCamera.transform.forward.z}");
         }
     }
 }
