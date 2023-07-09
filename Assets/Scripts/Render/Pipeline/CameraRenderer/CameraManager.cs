@@ -1,3 +1,4 @@
+using Options;
 using System;
 using UnityEngine;
 using static Render.Pipeline.CameraRenderer.CameraSettings;
@@ -124,7 +125,14 @@ namespace Render.Pipeline.CameraRenderer
             if (Screen.width != previousWidth || Screen.height != previousHeight)
                 OnScreenResolutionPropertyChanged();
 
-            transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
+            if (IDevice.ConnectedDevice.RotateCameraLeft)
+            {
+                transform.Rotate(0f, -rotationSpeed * Time.deltaTime, 0f);
+            }
+            else if (IDevice.ConnectedDevice.RotateCameraRight)
+            {
+                transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
+            }
         }
 
         private void LateUpdate()
@@ -133,8 +141,6 @@ namespace Render.Pipeline.CameraRenderer
             RotationSnap();
             // and pixelsnap the main camera
             PixelSnap(mainCamera);
-
-            Debug.Log($"{mainCamera.transform.forward.x}, {mainCamera.transform.forward.y}, {mainCamera.transform.forward.z}");
         }
     }
 }
