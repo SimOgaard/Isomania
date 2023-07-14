@@ -1,5 +1,6 @@
 using Options;
 using System;
+using System.Collections;
 using UnityEngine;
 using static Render.Pipeline.CameraRenderer.CameraSettings;
 
@@ -15,7 +16,7 @@ namespace Render.Pipeline.CameraRenderer
         [SerializeField]
         private float rotationSpeed;
 
-        private const float snapIncrement = 360f / 8f;
+        private const float rotationSnapIncrement = 360f / 8f;
 
         /// <summary>
         /// Rounds given Vector3 position to pixel grid
@@ -46,7 +47,7 @@ namespace Render.Pipeline.CameraRenderer
             camera.transform.localPosition = new Vector3(0f, 0f, -CameraDistance);
 
             // get center of bottom left pixel position because of floating point precision
-            Vector3 pixelPosition = camera.ScreenToWorldPoint(new Vector3(0.5f, 0.5f, 0f));
+            Vector3 pixelPosition = camera.ViewportToWorldPoint(new Vector3(0.5f / RenderResolutionExtended.x, 0.5f / RenderResolutionExtended.y, 0f));
             // remove the rotation from our pixel position
             Vector3 unrotatedPixelPosition = Quaternion.Inverse(camera.transform.rotation) * pixelPosition;
             // now we can snap it to the global pixel grid
@@ -101,7 +102,7 @@ namespace Render.Pipeline.CameraRenderer
             camera.orthographic = true;
             camera.orthographicSize = OrthographicSize;
             camera.clearFlags = CameraClearFlags.Color;
-            camera.backgroundColor = Color.magenta;
+            camera.backgroundColor = Color.white;
             camera.nearClipPlane = 0f;
             camera.farClipPlane = 500f;
 
@@ -120,6 +121,44 @@ namespace Render.Pipeline.CameraRenderer
             mainCamera.projectionMatrix = Matrix4x4.Ortho(-horizontal, horizontal, -vertical, vertical, mainCamera.nearClipPlane, mainCamera.farClipPlane);
         }
 
+        Coroutine? rotationCoroutine = null;
+        private float targetRotation; 
+        private float TargetRotation
+        {
+            get => targetRotation;
+            set
+            {
+                targetRotation = value;
+                if (rotationCoroutine is not null)
+                {
+                    StopCoroutine(rotationCoroutine);
+                    rotationCoroutine = null;
+                }
+
+                rotationCoroutine = StartCoroutine(SlerpRotation(targetRotation, rotationSpeed));
+            }
+        }
+        [SerializeField]
+        private float yRotation = 0.0f;
+        private float YRotation
+        {
+            get => yRotation;
+            set
+            {
+                // set y rotation
+                yRotation = value;
+
+                // create a new quaternion using the rounded values
+                Quaternion snappedRotation = Quaternion.Euler(
+                    30.0f, // 30 deg is isometric
+                    Mathf.Round(yRotation / RotationGrid) * RotationGrid,
+                    0.0f // ignoring z
+                );
+
+                // set the rotation to final snapped rotation
+                rotationAxisSnap.rotation = snappedRotation;
+            }
+        }
         private void Update()
         {
             if (Screen.width != previousWidth || Screen.height != previousHeight)
@@ -127,20 +166,39 @@ namespace Render.Pipeline.CameraRenderer
 
             if (IDevice.ConnectedDevice.RotateCameraLeft)
             {
-                transform.Rotate(0f, -rotationSpeed * Time.deltaTime, 0f);
+                TargetRotation += rotationSnapIncrement;
             }
             else if (IDevice.ConnectedDevice.RotateCameraRight)
             {
-                transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
+                TargetRotation -= rotationSnapIncrement;
             }
+        }
+
+        IEnumerator SlerpRotation(float endValue, float duration)
+        {
+            float time = 0;
+            float startValue = YRotation;
+            while (time < duration)
+            {
+                YRotation = Mathf.SmoothStep(startValue, endValue, time / duration);
+                time += Time.deltaTime;
+                yield return null;
+            }
+            YRotation = endValue.ClampRotation();
+            targetRotation = YRotation;
         }
 
         private void LateUpdate()
         {
-            // first rotation snap the rotation axis
-            RotationSnap();
-            // and pixelsnap the main camera
+            // pixelsnap the main camera
             PixelSnap(mainCamera);
+        }
+
+        private void OnDrawGizmos()
+        {
+            Vector3 pixelPosition = mainCamera.ViewportToWorldPoint(new Vector3(250.5f / RenderResolutionExtended.x, 250.5f / RenderResolutionExtended.y, 0f));
+            Vector3 rayDirection = mainCamera.transform.forward;
+            Gizmos.DrawRay(pixelPosition, rayDirection * 1000f);
         }
     }
 }

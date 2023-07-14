@@ -71,6 +71,8 @@ namespace Render.Pipeline.CameraRenderer
             RenderOffset = new Vector2(0f,0f);
 
             OrthographicSize = RenderResolutionExtended.y / (PixelsPerUnit * 2f);
+
+            Debug.Log($"{screenWidth} {screenHeight}");
         }
     }
 }

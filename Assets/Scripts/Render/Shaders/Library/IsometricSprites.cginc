@@ -19,12 +19,17 @@ struct v2f
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
+sampler2D _MainTex;
+uniform float4 _MainTex_TexelSize;
+
 inline float4 UnityFlipSprite(in float3 pos, in fixed2 flip)
 {
     return float4(pos.xy * flip, pos.z, 1.0);
 }
 
 #define yScale (1.0 / cos(radians(-30.0)))
+#define PixelsPerUnit 10.0
+#define UnitsPerPixel 1.0 / PixelsPerUnit
 
 v2f SpriteVert(appdata_t IN)
 {
@@ -48,6 +53,15 @@ v2f SpriteVert(appdata_t IN)
     modelMatrix[1][1] = scale.y;
     modelMatrix[2][2] = scale.z;
 
+    // if 
+    float offsetZX = (1.0f - fmod(_MainTex_TexelSize.z, 2.0)) * UnitsPerPixel * 0.5f;
+    float offsetY = (1.0f - fmod(_MainTex_TexelSize.w, 2.0)) * UnitsPerPixel * 0.5f;
+
+    // Set the world position to zero
+    modelMatrix[0][3] = round(modelMatrix[0][3] * PixelsPerUnit) * UnitsPerPixel + offsetZX;
+    modelMatrix[1][3] = round(modelMatrix[1][3] * PixelsPerUnit) * UnitsPerPixel + offsetY;
+    modelMatrix[2][3] = round(modelMatrix[2][3] * PixelsPerUnit) * UnitsPerPixel + offsetZX;
+
     // Copy them so we can change them (demonstration purposes only)
     float4x4 m = UNITY_MATRIX_M;
     float4x4 v = UNITY_MATRIX_V;
@@ -55,7 +69,7 @@ v2f SpriteVert(appdata_t IN)
 
     // Break out the axis
     float3 right = normalize(v._m00_m01_m02);
-    float3 up = float3(0,1,0);
+    float3 up = float3(0, 1, 0);
     float3 forward = normalize(v._m20_m21_m22);
     // Get the rotation parts of the matrix
     float4x4 rotationMatrix = float4x4(
@@ -85,10 +99,8 @@ v2f SpriteVert(appdata_t IN)
     return OUT;
 }
 
-sampler2D _MainTex;
-
 float4 SampleSpriteTexture(float2 uv)
-{    
+{
     return tex2D (_MainTex, uv);
 }
 

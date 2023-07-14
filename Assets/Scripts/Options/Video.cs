@@ -45,7 +45,7 @@ public class Video : ScriptableObject
             frameRateCap = value;
             if (frameRateCap)
             {
-                Application.targetFrameRate = -1;
+                Application.targetFrameRate = 60; // 
                 VSync = false;
             }
             else
