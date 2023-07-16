@@ -1,6 +1,8 @@
 #ifndef ISOMETRIC_SPRITES_INCLUDED
 #define ISOMETRIC_SPRITES_INCLUDED
 
+float4x4 _CameraRotationMatrix;
+float4x4 _InverseCameraRotationMatrix;
 #include "UnityCG.cginc"
 
 struct appdata_t
@@ -16,7 +18,6 @@ struct v2f
     float4 vertex   : SV_POSITION;
     fixed4 color    : COLOR;
     float2 texcoord : TEXCOORD0;
-    UNITY_VERTEX_OUTPUT_STEREO
 };
 
 sampler2D _MainTex;
@@ -36,31 +37,40 @@ v2f SpriteVert(appdata_t IN)
     v2f OUT;
 
     UNITY_SETUP_INSTANCE_ID(IN);
-    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
     
+    // Get the scale of the transform
     float3 scale = float3(
         length(unity_ObjectToWorld._m00_m10_m20),
         length(unity_ObjectToWorld._m01_m11_m21),
         length(unity_ObjectToWorld._m02_m12_m22)
     );
 
-    // Scale the object in the y-direction
+    // Scale the objects scale in the y-direction
     scale.y *= yScale;
  
-    // Apply the scaled values to the transformation matrix
+    // Get the transformation matrix
     float4x4 modelMatrix = unity_ObjectToWorld;
-    modelMatrix[0][0] = scale.x;
-    modelMatrix[1][1] = scale.y;
-    modelMatrix[2][2] = scale.z;
+
+    
+    // 
+    modelMatrix = mul(_InverseCameraRotationMatrix, modelMatrix);
 
     // if 
-    float offsetZX = (1.0f - fmod(_MainTex_TexelSize.z, 2.0)) * UnitsPerPixel * 0.5f;
+    float offsetX = (1.0f - fmod(_MainTex_TexelSize.z, 2.0)) * UnitsPerPixel * 0.5f;
     float offsetY = (1.0f - fmod(_MainTex_TexelSize.w, 2.0)) * UnitsPerPixel * 0.5f;
 
     // Set the world position to zero
-    modelMatrix[0][3] = round(modelMatrix[0][3] * PixelsPerUnit) * UnitsPerPixel + offsetZX;
+    modelMatrix[0][3] = round(modelMatrix[0][3] * PixelsPerUnit) * UnitsPerPixel + offsetX;
     modelMatrix[1][3] = round(modelMatrix[1][3] * PixelsPerUnit) * UnitsPerPixel + offsetY;
-    modelMatrix[2][3] = round(modelMatrix[2][3] * PixelsPerUnit) * UnitsPerPixel + offsetZX;
+    modelMatrix[2][3] = round(modelMatrix[2][3] * PixelsPerUnit) * UnitsPerPixel;
+
+    modelMatrix = mul(_CameraRotationMatrix, modelMatrix);
+
+
+
+    modelMatrix[0][0] = scale.x;
+    modelMatrix[1][1] = scale.y;
+    modelMatrix[2][2] = scale.z;
 
     // Copy them so we can change them (demonstration purposes only)
     float4x4 m = UNITY_MATRIX_M;

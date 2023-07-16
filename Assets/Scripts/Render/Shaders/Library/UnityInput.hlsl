@@ -17,4 +17,7 @@ float4x4 unity_PreviousWorldToObject;
 
 float4x4 unity_MatrixIV;
 
+float4x4 _CameraRotationMatrix;
+float4x4 _InverseCameraRotationMatrix;
+
 #endif

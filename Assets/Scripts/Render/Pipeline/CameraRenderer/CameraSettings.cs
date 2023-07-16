@@ -16,6 +16,7 @@ namespace Render.Pipeline.CameraRenderer
         public const float CameraDistanceZ = -CameraDistance * 0.8660254037f; // -Mathf.Cos(30f * Mathf.Deg2Rad) * CameraDistance;
         public static readonly Vector3 CameraDistanceVector = new(CameraDistanceX, CameraDistanceY, CameraDistanceZ);
 
+        public static Vector2 TestRenderResolution { get; private set; }
         public static Vector2Int RenderResolution { get; private set; }
         public static Vector2Int RenderResolutionExtended { get; private set; }
 
@@ -57,6 +58,8 @@ namespace Render.Pipeline.CameraRenderer
         public static void RecalculateCameraSettings(int screenWidth, int screenHeight)
         {
             (float renderWidth, float renderHeight) = CalculateResolution(screenWidth, screenHeight);
+
+            TestRenderResolution = new Vector2(renderWidth, renderHeight);
 
             RenderResolution = new Vector2Int(Mathf.CeilToInt(renderWidth), Mathf.CeilToInt(renderHeight));
             RenderResolutionExtended = RenderResolution;// + Vector2Int.one * 2;
