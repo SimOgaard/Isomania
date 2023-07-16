@@ -1,9 +1,10 @@
+using Render;
 using UnityEngine;
 
 namespace IsoDebug
 {
     [ExecuteAlways]
-    public class ObjectSpawner : MonoBehaviour
+    public class GPUObjectSpawner : MonoBehaviour
     {
         private static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
 

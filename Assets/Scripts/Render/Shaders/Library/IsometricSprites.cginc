@@ -5,6 +5,29 @@ float4x4 _CameraRotationMatrix;
 float4x4 _InverseCameraRotationMatrix;
 #include "UnityCG.cginc"
 
+#ifdef UNITY_INSTANCING_ENABLED
+
+    UNITY_INSTANCING_BUFFER_START(PerDrawSprite)
+        // SpriteRenderer.Color while Non-Batched/Instanced.
+        UNITY_DEFINE_INSTANCED_PROP(fixed4, unity_SpriteRendererColorArray)
+        // this could be smaller but that's how bit each entry is regardless of type
+        UNITY_DEFINE_INSTANCED_PROP(fixed2, unity_SpriteFlipArray)
+    UNITY_INSTANCING_BUFFER_END(PerDrawSprite)
+
+    #define _RendererColor  UNITY_ACCESS_INSTANCED_PROP(PerDrawSprite, unity_SpriteRendererColorArray)
+
+#endif // instancing
+
+CBUFFER_START(UnityPerDrawSprite)
+#ifndef UNITY_INSTANCING_ENABLED
+    fixed4 _RendererColor;
+#endif
+    float _EnableExternalAlpha;
+CBUFFER_END
+
+// Material Color.
+fixed4 _Color;
+
 struct appdata_t
 {
     float4 vertex   : POSITION;
@@ -21,7 +44,9 @@ struct v2f
 };
 
 sampler2D _MainTex;
+sampler2D _AlphaTex;
 uniform float4 _MainTex_TexelSize;
+uniform float4 _AlphaTex_TexelSize;
 
 inline float4 UnityFlipSprite(in float3 pos, in fixed2 flip)
 {
@@ -49,11 +74,7 @@ v2f SpriteVert(appdata_t IN)
     scale.y *= yScale;
  
     // Get the transformation matrix
-    float4x4 modelMatrix = unity_ObjectToWorld;
-
-    
-    // 
-    modelMatrix = mul(_InverseCameraRotationMatrix, modelMatrix);
+    float4x4 modelMatrix = mul(_InverseCameraRotationMatrix, unity_ObjectToWorld);
 
     // if 
     float offsetX = (1.0f - fmod(_MainTex_TexelSize.z, 2.0)) * UnitsPerPixel * 0.5f;
@@ -65,8 +86,6 @@ v2f SpriteVert(appdata_t IN)
     modelMatrix[2][3] = round(modelMatrix[2][3] * PixelsPerUnit) * UnitsPerPixel;
 
     modelMatrix = mul(_CameraRotationMatrix, modelMatrix);
-
-
 
     modelMatrix[0][0] = scale.x;
     modelMatrix[1][1] = scale.y;
@@ -102,21 +121,26 @@ v2f SpriteVert(appdata_t IN)
     OUT.vertex = pos;
 
     OUT.texcoord = IN.texcoord;
-    OUT.color = IN.color;
-
-    OUT.vertex = UnityPixelSnap(OUT.vertex);
+    OUT.color = IN.color * _Color * _RendererColor;
 
     return OUT;
 }
 
-float4 SampleSpriteTexture(float2 uv)
+fixed4 SampleSpriteTexture (float2 uv)
 {
-    return tex2D (_MainTex, uv);
+    fixed4 color = tex2D (_MainTex, uv);
+
+#if ETC1_EXTERNAL_ALPHA
+    fixed4 alpha = tex2D (_AlphaTex, uv);
+    color.a = lerp (color.a, alpha.r, _EnableExternalAlpha);
+#endif
+
+    return color;
 }
 
-float4 SpriteFrag(v2f IN) : SV_Target
+fixed4 SpriteFrag(v2f IN) : SV_Target
 {
-    float4 c = SampleSpriteTexture (IN.texcoord) * IN.color;
+    fixed4 c = SampleSpriteTexture (IN.texcoord) * IN.color;
     c.rgb *= c.a;
     return c;
 }

@@ -3,6 +3,7 @@ Shader "Sprite/BillboardShader"
     Properties
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+		_Color("Color", Color) = (1.0, 1.0, 1.0, 1.0)
     }
 
     SubShader

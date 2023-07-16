@@ -16,26 +16,6 @@ namespace Render.Pipeline.CameraRenderer
         [SerializeField]
         private float rotationSpeed;
 
-        private const float rotationSnapIncrement = 360f / 8f;
-
-        /// <summary>
-        /// Rounds given Vector3 position to pixel grid
-        /// </summary>
-        /// <param name="position">Vector position to round</param>
-        /// <returns>Rounded <see cref="Vector3"/> to </returns>
-        private static Vector3 RoundToPixel(Vector3 position)
-        {
-            Vector3 inversedRotationPosition = inverseCameraRotation * position;
-
-            Vector3 snapped = new Vector3(
-                Mathf.Round(inversedRotationPosition.x * PixelsPerUnit) * UnitsPerPixel,
-                Mathf.Round(inversedRotationPosition.y * PixelsPerUnit) * UnitsPerPixel,
-                Mathf.Round(inversedRotationPosition.z * PixelsPerUnit) * UnitsPerPixel
-            );
-
-            return cameraRotation * snapped;
-        }
-
         /// <summary>
         /// Snap <paramref name="camera"/> position to pixel grid using Camera.worldToCameraMatrix
         /// </summary>
@@ -55,29 +35,9 @@ namespace Render.Pipeline.CameraRenderer
             // get center of most center pixel position because of floating point precision
             Vector3 pixelPosition = camera.ViewportToWorldPoint(viewPortPoint);
             // now we can snap it to the global pixel grid
-            Vector3 roundedCameraPosition = RoundToPixel(pixelPosition);
+            Vector3 roundedCameraPosition = PixelPerfectExtensions.RoundToPixel(pixelPosition);
             // offset camera position with rounded and unrounded pixel position difference to snap it to our grid
             camera.transform.position += roundedCameraPosition - pixelPosition;
-            /*
-            // we assume that camera.transform is done moving for this frame
-            // so now, right before rendering we want to snapp the camera's pixels to our global pixel grid
-            // using bottom left pixel as reference
-
-            // reseting local position:
-            camera.transform.localPosition = new Vector3(0f, 0f, -CameraDistance);
-
-            Vector3 viewPortPoint = new Vector3(
-                Mathf.Round(0.5f * RenderResolutionExtended.x) / RenderResolutionExtended.x,
-                Mathf.Round(0.5f * RenderResolutionExtended.y) / RenderResolutionExtended.y,
-                0f
-            );
-
-            // get center of most center pixel position because of floating point precision
-            Vector3 pixelPosition = camera.ViewportToWorldPoint(viewPortPoint);
-
-            // round it to pixel grid
-            camera.transform.position = RoundToPixel(pixelPosition);
-            */
         }
 
         private void Awake()
@@ -144,27 +104,22 @@ namespace Render.Pipeline.CameraRenderer
                 float snappedYRotation = Mathf.Round(yRotation / RotationGrid) * RotationGrid;
 
                 // create a new quaternion using the rounded values
-                cameraRotation = Quaternion.Euler(
+                CameraRotation = Quaternion.Euler(
                     30.0f, // 30 deg is isometric
                     snappedYRotation,
                     0.0f // ignoring z
                 );
 
                 // create a inverted quaternion of the rounded rotation
-                inverseCameraRotation = Quaternion.Inverse(cameraRotation);
+                InverseCameraRotation = Quaternion.Inverse(CameraRotation);
 
-                Shader.SetGlobalMatrix(cameraRotationMatrixId, Matrix4x4.Rotate(cameraRotation));
-                Shader.SetGlobalMatrix(inverseCameraRotationMatrixId, Matrix4x4.Rotate(inverseCameraRotation));
+                Shader.SetGlobalMatrix(CameraRotationMatrixId, Matrix4x4.Rotate(CameraRotation));
+                Shader.SetGlobalMatrix(InverseCameraRotationMatrixId, Matrix4x4.Rotate(InverseCameraRotation));
 
                 // set the rotation to final snapped rotation
-                rotationAxisSnap.rotation = cameraRotation;
+                rotationAxisSnap.rotation = CameraRotation;
             }
         }
-
-        private static Quaternion cameraRotation;
-        private static Quaternion inverseCameraRotation;
-        private static readonly int cameraRotationMatrixId = Shader.PropertyToID("_CameraRotationMatrix"),
-                                    inverseCameraRotationMatrixId = Shader.PropertyToID("_InverseCameraRotationMatrix");
 
         private void Update()
         {
@@ -173,11 +128,11 @@ namespace Render.Pipeline.CameraRenderer
 
             if (IDevice.ConnectedDevice.RotateCameraLeft)
             {
-                TargetRotation += rotationSnapIncrement;
+                TargetRotation += CameraSettings.CameraRotationSnapIncrement;
             }
             else if (IDevice.ConnectedDevice.RotateCameraRight)
             {
-                TargetRotation -= rotationSnapIncrement;
+                TargetRotation -= CameraSettings.CameraRotationSnapIncrement;
             }
         }
 
@@ -203,6 +158,7 @@ namespace Render.Pipeline.CameraRenderer
 
         private void OnDrawGizmos()
         {
+            return;
             Gizmos.color = new Color(1,1,1,0.1f);
             const int skip = 10;
 

@@ -9,24 +9,32 @@ UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct Attributes
 {
-	float3 positionOS : POSITION;
+	float4 vertex : POSITION;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct Varyings
 {
-	float4 positionCS : SV_POSITION;
+	float4 vertex : SV_POSITION;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 Varyings UnlitPassVertex (Attributes input)
 {
-	Varyings output;
-	UNITY_SETUP_INSTANCE_ID(input);
-	UNITY_TRANSFER_INSTANCE_ID(input, output);
-	float3 positionWS = TransformObjectToWorld(input.positionOS);
-	output.positionCS = TransformWorldToHClip(positionWS);
-	return output;
+    Varyings output;
+
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
+
+    PixelSnapObjectToWorldMatrix();
+
+    float4 pos = input.vertex;
+    pos = mul(UNITY_MATRIX_M, pos);
+    pos = mul(UNITY_MATRIX_VP, pos);
+
+    output.vertex = pos;
+
+    return output;
 }
 
 float4 UnlitPassFragment (Varyings input) : SV_TARGET

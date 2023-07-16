@@ -14,10 +14,16 @@ namespace Render.Pipeline.CameraRenderer
         public const float CameraDistanceX = 0;
         public const float CameraDistanceY = CameraDistance * 0.5f; // Mathf.Sin(30f * Mathf.Deg2Rad) * CameraDistance;
         public const float CameraDistanceZ = -CameraDistance * 0.8660254037f; // -Mathf.Cos(30f * Mathf.Deg2Rad) * CameraDistance;
-        public static readonly Vector3 CameraDistanceVector = new(CameraDistanceX, CameraDistanceY, CameraDistanceZ);
 
-        public static Vector2 TestRenderResolution { get; private set; }
-        public static Vector2Int RenderResolution { get; private set; }
+        public const float CameraRotationSnapIncrement = 360f / 8f;
+        public static readonly Vector3 CameraDistanceVector = new(CameraDistanceX, CameraDistanceY, CameraDistanceZ);
+        public static readonly int CameraRotationMatrixId = Shader.PropertyToID("_CameraRotationMatrix");
+        public static readonly int InverseCameraRotationMatrixId = Shader.PropertyToID("_InverseCameraRotationMatrix");
+
+        public static Quaternion CameraRotation;
+        public static Quaternion InverseCameraRotation;
+
+        public static Vector2 RenderResolution { get; private set; }
         public static Vector2Int RenderResolutionExtended { get; private set; }
 
         public static Vector2 RenderOffset { get; private set; }
@@ -59,10 +65,13 @@ namespace Render.Pipeline.CameraRenderer
         {
             (float renderWidth, float renderHeight) = CalculateResolution(screenWidth, screenHeight);
 
-            TestRenderResolution = new Vector2(renderWidth, renderHeight);
+            RenderResolution = new Vector2(renderWidth, renderHeight);
 
-            RenderResolution = new Vector2Int(Mathf.CeilToInt(renderWidth), Mathf.CeilToInt(renderHeight));
-            RenderResolutionExtended = RenderResolution;// + Vector2Int.one * 2;
+            // odd number so it snaps as little as posible on camera rotation
+            RenderResolutionExtended = new Vector2Int(
+                MathExtensions.GetCeiledOddNumber(renderWidth) + 2,
+                MathExtensions.GetCeiledOddNumber(renderHeight) + 2
+            );
 
             float renderScaleX = (float)renderWidth / RenderResolutionExtended.x;
             float renderScaleY = (float)renderHeight / RenderResolutionExtended.y;
@@ -74,8 +83,6 @@ namespace Render.Pipeline.CameraRenderer
             RenderOffset = new Vector2(0f,0f);
 
             OrthographicSize = RenderResolutionExtended.y / (PixelsPerUnit * 2f);
-
-            Debug.Log($"{screenWidth} {screenHeight}");
         }
     }
 }
