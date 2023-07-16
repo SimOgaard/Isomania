@@ -9,12 +9,16 @@ namespace Render.Pipeline.CameraRenderer
     [ExecuteAlways]
     public class CameraManager : MonoBehaviour
     {
+        [Header("Static Fields")]
         [SerializeField]
         private Camera mainCamera;
         [SerializeField]
         private Transform rotationAxisSnap;
+        [Header("Fields")]
         [SerializeField]
         private float rotationSpeed;
+        [SerializeField]
+        private float translationSpeed;
 
         /// <summary>
         /// Snap <paramref name="camera"/> position to pixel grid using Camera.worldToCameraMatrix
@@ -48,6 +52,8 @@ namespace Render.Pipeline.CameraRenderer
                 throw new NullReferenceException($"{nameof(rotationAxisSnap)} is null");
 
             InitializeCameraSettings(mainCamera);
+
+            TargetRotation = 0;
         }
 
         private void InitializeCameraSettings(Camera camera)
@@ -91,7 +97,6 @@ namespace Render.Pipeline.CameraRenderer
                 rotationCoroutine = StartCoroutine(SlerpRotation(targetRotation, rotationSpeed));
             }
         }
-        [SerializeField]
         private float yRotation = 0.0f;
         private float YRotation
         {
@@ -101,12 +106,12 @@ namespace Render.Pipeline.CameraRenderer
                 // set y rotation
                 yRotation = value;
 
-                float snappedYRotation = Mathf.Round(yRotation / RotationGrid) * RotationGrid;
+                CameraYRotation = Mathf.Round(yRotation / RotationGrid) * RotationGrid;
 
                 // create a new quaternion using the rounded values
                 CameraRotation = Quaternion.Euler(
                     30.0f, // 30 deg is isometric
-                    snappedYRotation,
+                    CameraYRotation,
                     0.0f // ignoring z
                 );
 
@@ -128,12 +133,14 @@ namespace Render.Pipeline.CameraRenderer
 
             if (IDevice.ConnectedDevice.RotateCameraLeft)
             {
-                TargetRotation += CameraSettings.CameraRotationSnapIncrement;
+                TargetRotation += CameraRotationSnapIncrement;
             }
             else if (IDevice.ConnectedDevice.RotateCameraRight)
             {
-                TargetRotation -= CameraSettings.CameraRotationSnapIncrement;
+                TargetRotation -= CameraRotationSnapIncrement;
             }
+
+            transform.position += IDevice.ConnectedDevice.NormalizedDirection * translationSpeed * Time.deltaTime;
         }
 
         private IEnumerator SlerpRotation(float endValue, float duration)

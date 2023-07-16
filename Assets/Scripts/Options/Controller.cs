@@ -7,5 +7,7 @@ namespace Options
         public bool RotateCameraLeft => throw new System.NotImplementedException();
 
         public bool RotateCameraRight => throw new System.NotImplementedException();
+
+        public Vector3 Direction => throw new System.NotImplementedException();
     }
 }
