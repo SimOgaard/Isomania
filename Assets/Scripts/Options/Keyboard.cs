@@ -9,7 +9,34 @@ namespace Options
 
         public bool RotateCameraRight => Input.GetKeyDown(KeyCode.E);
 
-        public Vector3 Direction
+        public Vector3 LookDirection
+        {
+            get
+            {
+                if (CameraManagerTransform is null)
+                    return Vector3.zero;
+
+                // get cameramanager position from its transform
+                Vector3 cameraManagerPosition = CameraManagerTransform.position;
+
+                // create a plane on cameramanager transform
+                Plane plane = new Plane(Vector3.up, cameraManagerPosition);
+
+                // cast a ray from the mouse position
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                // perform the raycast
+                if (plane.Raycast(ray, out float enter))
+                {
+                    Vector3 worldPosition = ray.GetPoint(enter);
+                    return Vector3.ClampMagnitude((worldPosition - cameraManagerPosition) / 3.5f, 5f);
+                }
+
+                return Vector3.zero;
+            }
+        }
+
+        public Vector3 HeadingDirection
         {
             get
             {

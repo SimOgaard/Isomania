@@ -52,7 +52,7 @@ namespace Render.Pipeline.CameraRenderer
                 throw new NullReferenceException($"{nameof(rotationAxisSnap)} is null");
 
             InitializeCameraSettings(mainCamera);
-
+            CameraManagerTransform = transform;
             TargetRotation = 0;
         }
 
@@ -140,7 +140,7 @@ namespace Render.Pipeline.CameraRenderer
                 TargetRotation -= CameraRotationSnapIncrement;
             }
 
-            transform.position += IDevice.ConnectedDevice.NormalizedDirection * translationSpeed * Time.deltaTime;
+            rotationAxisSnap.position = IDevice.ConnectedDevice.LookDirection;
         }
 
         private IEnumerator SlerpRotation(float endValue, float duration)
@@ -166,7 +166,7 @@ namespace Render.Pipeline.CameraRenderer
         private void OnDrawGizmos()
         {
             return;
-            Gizmos.color = new Color(1,1,1,0.1f);
+            Gizmos.color = new Color(1,0,0,1);
             const int skip = 10;
 
             for (int x = 0; x < RenderResolutionExtended.x; x += skip)

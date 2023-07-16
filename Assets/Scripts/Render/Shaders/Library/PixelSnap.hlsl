@@ -3,6 +3,7 @@
 
 #define PixelsPerUnit 10.0
 #define UnitsPerPixel 1.0 / PixelsPerUnit
+#define HalfUnitsPerPixelOffset UnitsPerPixel / 2.0
 
 void PixelSnapObjectToWorldMatrix()
 {

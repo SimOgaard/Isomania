@@ -15,6 +15,8 @@
 
 #define UNITY_MATRIX_I_V unity_MatrixIV
 
+#define UNITY_MATRIX_MVP mul(UNITY_MATRIX_VP, UNITY_MATRIX_M)
+
 #include "PixelSnap.hlsl"
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"

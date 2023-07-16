@@ -20,6 +20,8 @@ namespace Render.Pipeline.CameraRenderer
         public static readonly int CameraRotationMatrixId = Shader.PropertyToID("_CameraRotationMatrix");
         public static readonly int InverseCameraRotationMatrixId = Shader.PropertyToID("_InverseCameraRotationMatrix");
 
+        public static Transform CameraManagerTransform;
+
         public static float CameraYRotation;
         public static Quaternion CameraRotation;
         public static Quaternion InverseCameraRotation;

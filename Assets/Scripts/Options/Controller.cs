@@ -8,6 +8,8 @@ namespace Options
 
         public bool RotateCameraRight => throw new System.NotImplementedException();
 
-        public Vector3 Direction => throw new System.NotImplementedException();
+        public Vector3 LookDirection => throw new System.NotImplementedException();
+
+        public Vector3 HeadingDirection => throw new System.NotImplementedException();
     }
 }
