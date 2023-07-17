@@ -29,7 +29,8 @@ namespace Render.Pipeline.CameraRenderer
         public static Vector2 RenderResolution { get; private set; }
         public static Vector2Int RenderResolutionExtended { get; private set; }
 
-        public static Vector2 RenderOffset { get; private set; }
+        public static Vector2 RenderOffset { get; set; } = Vector2.zero;
+        public static Vector2 StaticRenderOffset { get; private set; }
         public static Vector2 RenderScale { get; private set; }
 
         public static float OrthographicSize { get; private set; }
@@ -78,12 +79,12 @@ namespace Render.Pipeline.CameraRenderer
 
             float renderScaleX = (float)renderWidth / RenderResolutionExtended.x;
             float renderScaleY = (float)renderHeight / RenderResolutionExtended.y;
-            float renderOffsetX = (1f - ((float)screenWidth / (RenderResolutionExtended.x * renderScaleX))) / 2f; // this does not work ! ! !
-            float renderOffsetY = (1f - ((float)screenHeight / (RenderResolutionExtended.y * renderScaleY))) / 2f;
+            float renderOffsetX = (1f - (screenWidth / (RenderResolutionExtended.x * renderScaleX))) / 2f; // this does not work ! ! !
+            float renderOffsetY = (1f - (screenHeight / (RenderResolutionExtended.y * renderScaleY))) / 2f;
 
             RenderScale = new Vector2(renderScaleX, renderScaleY);
-            RenderOffset = new Vector2(renderOffsetX, renderOffsetY);
-            RenderOffset = new Vector2(0f,0f);
+            StaticRenderOffset = new Vector2(renderOffsetX, renderOffsetY);
+            StaticRenderOffset = new Vector2(0f,0f);
 
             OrthographicSize = RenderResolutionExtended.y / (PixelsPerUnit * 2f);
         }

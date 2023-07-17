@@ -25,7 +25,7 @@ namespace Render.Pipeline.CameraRenderer
         /// </summary>
         /// <param name="camera">Game object camera script</param>
         /// <returns><see cref="Vector2"/> containing screen pixel render offset</returns>
-        private static void PixelSnap(Camera camera)
+        private static Vector2 PixelSnap(Camera camera)
         {
             // reseting local position:
             camera.transform.localPosition = new Vector3(0f, 0f, -CameraDistance);
@@ -39,9 +39,20 @@ namespace Render.Pipeline.CameraRenderer
             // get center of most center pixel position because of floating point precision
             Vector3 pixelPosition = camera.ViewportToWorldPoint(viewPortPoint);
             // now we can snap it to the global pixel grid
-            Vector3 roundedCameraPosition = PixelPerfectExtensions.RoundToPixel(pixelPosition);
-            // offset camera position with rounded and unrounded pixel position difference to snap it to our grid
-            camera.transform.position += roundedCameraPosition - pixelPosition;
+            Vector3 roundedPixelPosition = PixelPerfectExtensions.RoundToPixel(pixelPosition);
+            // get the rounded and unrounded pixel position difference
+            Vector3 difference = roundedPixelPosition - pixelPosition;
+            // offset camera position with difference to snap it to our grid
+            camera.transform.position += difference;
+            // from difference get render offset by first rotating back to 
+            Vector3 unrotatedDifference = InverseCameraRotation * difference;
+            // from now on can dismiss z
+            Vector2 scaledUnrotatedDifference = new Vector2(
+                unrotatedDifference.x * PixelsPerUnit / RenderResolutionExtended.x,
+                unrotatedDifference.y * PixelsPerUnit / RenderResolutionExtended.y
+            );
+            // and return it
+            return scaledUnrotatedDifference;
         }
 
         private void Awake()
@@ -160,7 +171,7 @@ namespace Render.Pipeline.CameraRenderer
         private void LateUpdate()
         {
             // pixelsnap the main camera
-            PixelSnap(mainCamera);
+            RenderOffset = PixelSnap(mainCamera);
         }
 
         private void OnDrawGizmos()

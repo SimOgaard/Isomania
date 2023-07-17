@@ -104,7 +104,7 @@ namespace Render.Pipeline.CameraRenderer
 
         protected virtual void Render()
         {
-            buffer.Blit(colorAttachmentId, BuiltinRenderTextureType.CameraTarget, RenderScale, RenderOffset);
+            buffer.Blit(colorAttachmentId, BuiltinRenderTextureType.CameraTarget, RenderScale, StaticRenderOffset - RenderOffset);
         }
 
         protected void Submit()
