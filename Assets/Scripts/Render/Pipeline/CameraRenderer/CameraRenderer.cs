@@ -6,7 +6,8 @@ namespace Render.Pipeline.CameraRenderer
 {
     public abstract class CameraRenderer
     {
-        protected static readonly ShaderTagId unlitShaderTagId = new("SRPDefaultUnlit");
+        protected static readonly ShaderTagId unlitShaderTagId = new("SRPDefaultUnlit"),
+                                              litShaderTagId = new ShaderTagId("CustomLit");
         protected static readonly int bufferSizeId = Shader.PropertyToID("_CameraBufferSize"),
                                       colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment"),
  							          depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment"),
@@ -40,6 +41,7 @@ namespace Render.Pipeline.CameraRenderer
                 enableDynamicBatching = useDynamicBatching,
                 enableInstancing = useGPUInstancing
             };
+            drawingSettings.SetShaderPassName(1, litShaderTagId);
             FilteringSettings filteringSettings = new(RenderQueueRange.opaque);
 
             context.DrawRenderers(

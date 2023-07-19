@@ -8,14 +8,17 @@
 #define RotationSnap 360.0 / 32.0
 #define InverseRotationSnap 1.0 / (RotationSnap)
 
-#define Epsilon 1e-5
-#define PI 3.14159265359
-#define Rad2Deg (180.0 / PI)
-#define Deg2Rad (PI / 180.0)
+#include "Math.hlsl"
 
 void SnapRotation(inout float4 rotation)
 {
-    float azimuth = atan2(rotation.y + Epsilon, rotation.x);
+    // Check for possible NaN outputs from atan2
+    if (rotation.y == 0 && rotation.x == 0)
+    {
+        return;
+    }
+
+    float azimuth = atan2(rotation.y, rotation.x);
     float elevation = acos(rotation.z);
 
     float snapAzimuth = round(azimuth * InverseRotationSnap * Rad2Deg) * RotationSnap * Deg2Rad;
@@ -28,23 +31,23 @@ void SnapRotation(inout float4 rotation)
     rotation.z = cos(snapElevation) * magnitude;
 }
 
-void PixelSnapObjectToWorldMatrix()
+void PixelSnapMatrix(inout float4x4 matrix4x4)
 {
     // Snap the rotation
-    SnapRotation(unity_ObjectToWorld[0]);
-    SnapRotation(unity_ObjectToWorld[1]);
-    SnapRotation(unity_ObjectToWorld[2]);
+    SnapRotation(matrix4x4[0]);
+    SnapRotation(matrix4x4[1]);
+    SnapRotation(matrix4x4[2]);
 
     // Get the transformation matrix in "camera space"
-    float4x4 objectToWorld = mul(_InverseCameraRotationMatrix, unity_ObjectToWorld);
+    matrix4x4 = mul(_InverseCameraRotationMatrix, matrix4x4);
 
     // Snap the world position now in "camera space"
-    objectToWorld[0][3] = round(objectToWorld[0][3] * PixelsPerUnit) * UnitsPerPixel;
-    objectToWorld[1][3] = round(objectToWorld[1][3] * PixelsPerUnit) * UnitsPerPixel;
-    objectToWorld[2][3] = round(objectToWorld[2][3] * PixelsPerUnit) * UnitsPerPixel;
+    matrix4x4[0][3] = round(matrix4x4[0][3] * PixelsPerUnit) * UnitsPerPixel;
+    matrix4x4[1][3] = round(matrix4x4[1][3] * PixelsPerUnit) * UnitsPerPixel;
+    matrix4x4[2][3] = round(matrix4x4[2][3] * PixelsPerUnit) * UnitsPerPixel;
 
     // Transform back to world
-    unity_ObjectToWorld = mul(_CameraRotationMatrix, objectToWorld);
+    matrix4x4 = mul(_CameraRotationMatrix, matrix4x4);
 }
 
 #endif
