@@ -15,7 +15,7 @@ Shader "Debug/Ground"
 			#pragma multi_compile_instancing
 			#pragma vertex UnlitPassVertex
 			#pragma fragment UnlitPassFragment
-			#include "Library/Common.hlsl"
+			#include "../Library/Common.hlsl"
 
 			float4 _LightColor;
 			float4 _DarkColor;

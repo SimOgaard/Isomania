@@ -151,7 +151,14 @@ namespace Render.Pipeline.CameraRenderer
                 TargetRotation -= CameraRotationSnapIncrement;
             }
 
+#if UNITY_EDITOR
+            if (Application.isPlaying)
+                rotationAxisSnap.position = IDevice.ConnectedDevice.LookDirection;
+            else
+                rotationAxisSnap.position = Vector3.zero;
+#else
             rotationAxisSnap.position = IDevice.ConnectedDevice.LookDirection;
+#endif
         }
 
         private IEnumerator SlerpRotation(float endValue, float duration)
