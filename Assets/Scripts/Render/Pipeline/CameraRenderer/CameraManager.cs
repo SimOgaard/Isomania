@@ -153,7 +153,7 @@ namespace Render.Pipeline.CameraRenderer
 
 #if UNITY_EDITOR
             if (Application.isPlaying)
-                rotationAxisSnap.position = IDevice.ConnectedDevice.LookDirection;
+                rotationAxisSnap.position = IDevice.ConnectedDevice.LookDirection * 0.0f;
             else
                 rotationAxisSnap.position = Vector3.zero;
 #else
