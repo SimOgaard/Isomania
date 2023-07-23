@@ -5,7 +5,7 @@
 #define UnitsPerPixel (1.0 / PixelsPerUnit)
 #define HalfUnitsPerPixelOffset (UnitsPerPixel / 2.0)
 
-#define RotationSnap 360.0 / 90.0
+#define RotationSnap 360.0 / 24.0
 #define InverseRotationSnap 1.0 / (RotationSnap)
 
 #include "Math.hlsl"

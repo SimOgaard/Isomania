@@ -2,6 +2,7 @@
 #define CUSTOM_LIT_PASS_INCLUDED
 
 #include "Library/Common.hlsl"
+#include "Library/Surface.hlsl"
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
