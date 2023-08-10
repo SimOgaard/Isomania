@@ -6,8 +6,6 @@
 #define PixelsPerUnit 10.0
 #define HalfUnitsPerPixelOffset (0.5 / PixelsPerUnit)
 
-#define RotationSnap ((360.0 / 24.0) * Deg2Rad)
-
 void PixelSnapMatrix(inout float4x4 matrix4x4)
 {
     // Get the transformation matrix in "camera space"
@@ -21,6 +19,8 @@ void PixelSnapMatrix(inout float4x4 matrix4x4)
     // Transform back to world
     matrix4x4 = mul(_CameraRotationMatrix, matrix4x4);
 }
+
+#define RotationSnap ((360.0 / 24.0) * Deg2Rad)
 
 void SnapRotation(inout float4 rotation)
 {

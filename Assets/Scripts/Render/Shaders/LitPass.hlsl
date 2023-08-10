@@ -10,14 +10,14 @@ UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct Attributes
 {
-	float4 vertex : POSITION;
+	float3 positionOS : POSITION;
     float3 normalOS : NORMAL;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct Varyings
 {
-	float4 vertex : SV_POSITION;
+	float4 positionCS : SV_POSITION;
 	float3 normalWS : VAR_NORMAL;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -32,14 +32,8 @@ Varyings LitPassVertex (Attributes input)
     PixelSnapMatrix(unity_ObjectToWorld);
     PixelSnapMatrix(unity_WorldToObject);
 
-    RotationSnapMatrix(unity_ObjectToWorld);
-    RotationSnapMatrix(unity_WorldToObject);
-
-    float4 pos = input.vertex;
-    pos = mul(UNITY_MATRIX_M, pos);
-    pos = mul(UNITY_MATRIX_VP, pos);
-
-    output.vertex = pos;
+    float3 positionWS = TransformObjectToWorld(input.positionOS);
+	output.positionCS = TransformWorldToHClip(positionWS);
 
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
 
