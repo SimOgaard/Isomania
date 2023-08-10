@@ -10,7 +10,7 @@ namespace Render
         /// </summary>
         /// <param name="position">Vector position to round</param>
         /// <returns>Rounded <see cref="Vector3"/> to </returns>
-        public static Vector3 RoundToPixel(Vector3 position)
+        public static Vector3 RoundToPixel(this Vector3 position)
         {
             Vector3 inversedRotationPosition = InverseCameraRotation * position;
 
@@ -21,6 +21,27 @@ namespace Render
             );
 
             return CameraRotation * snapped;
+        }
+
+        public static Quaternion RoundToRotation(this Quaternion rotation)
+        {
+            return Quaternion.Euler(RoundToEulerRotation(rotation.eulerAngles));
+        }
+        public static Quaternion RoundToRotation(this Vector3 eulerRotation)
+        {
+            return Quaternion.Euler(RoundToEulerRotation(eulerRotation));
+        }
+        public static Vector3 RoundToEulerRotation(this Quaternion rotation)
+        {
+            return RoundToEulerRotation(rotation.eulerAngles);
+        }
+        public static Vector3 RoundToEulerRotation(this Vector3 eulerRotation)
+        {
+            return new(
+                Mathf.Round(eulerRotation.x * InverseRotationGrid) * RotationGrid,
+                Mathf.Round(eulerRotation.y * InverseRotationGrid) * RotationGrid,
+                Mathf.Round(eulerRotation.z * InverseRotationGrid) * RotationGrid
+            );
         }
     }
 }

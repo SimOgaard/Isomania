@@ -39,7 +39,7 @@ namespace Render.Pipeline.CameraRenderer
             // get center of most center pixel position because of floating point precision
             Vector3 pixelPosition = camera.ViewportToWorldPoint(viewPortPoint);
             // now we can snap it to the global pixel grid
-            Vector3 roundedPixelPosition = PixelPerfectExtensions.RoundToPixel(pixelPosition);
+            Vector3 roundedPixelPosition = pixelPosition.RoundToPixel();
             // get the rounded and unrounded pixel position difference
             Vector3 difference = roundedPixelPosition - pixelPosition;
             // offset camera position with difference to snap it to our grid

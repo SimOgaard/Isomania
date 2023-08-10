@@ -28,9 +28,12 @@ Varyings LitPassVertex (Attributes input)
 
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
-
+    
     PixelSnapMatrix(unity_ObjectToWorld);
     PixelSnapMatrix(unity_WorldToObject);
+
+    RotationSnapMatrix(unity_ObjectToWorld);
+    RotationSnapMatrix(unity_WorldToObject);
 
     float4 pos = input.vertex;
     pos = mul(UNITY_MATRIX_M, pos);

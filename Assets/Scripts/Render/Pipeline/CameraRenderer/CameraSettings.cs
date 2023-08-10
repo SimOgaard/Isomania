@@ -9,6 +9,7 @@ namespace Render.Pipeline.CameraRenderer
         public const float UnitsPerPixel = 1f / PixelsPerUnit;
 
         public const float RotationGrid = 30f / 16f;
+        public const float InverseRotationGrid = 1f / RotationGrid;
 
         public const float CameraDistance = 50f;
         public const float CameraDistanceX = 0;
